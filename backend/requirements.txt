@@ -1,0 +1,30 @@
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# LLM & Embeddings
+ollama==0.1.7
+fastembed==0.7.2
+#sentence-transformers==2.2.2
+
+# Vector Database
+qdrant-client==1.15.1
+numpy==1.24.3
+
+# Document Processing
+PyPDF2==3.0.1
+python-multipart==0.0.6
+beautifulsoup4==4.12.2
+requests==2.31.0
+
+# Background Processing
+asyncio
+
+# Data Processing
+pandas==2.0.3
+python-dotenv==1.0.0
+
+# Additional utilities
+aiofiles==23.2.1

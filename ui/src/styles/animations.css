@@ -1,0 +1,195 @@
+/* Background animations */
+@keyframes gradientFlow {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(20px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes floatIcons {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  75% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+}
+
+/* Card animations */
+@keyframes cardHover {
+  0% { 
+    transform: translateY(0) scale(1); 
+    box-shadow: var(--shadow-md);
+  }
+  100% { 
+    transform: translateY(-2px) scale(1.01); 
+    box-shadow: var(--shadow-xl);
+  }
+}
+
+@keyframes cardEnter {
+  0% {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Button animations */
+@keyframes buttonPress {
+  0% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(0.98); 
+  }
+  100% { 
+    transform: scale(1); 
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Slide animations */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Toast animations */
+@keyframes toastSlideIn {
+  0% {
+    transform: translateX(100%) translateY(-50%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) translateY(-50%);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlideOut {
+  0% {
+    transform: translateX(0) translateY(-50%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) translateY(-50%);
+    opacity: 0;
+  }
+}
+
+/* Utility classes */
+.animate-gradient {
+  background: linear-gradient(-45deg, var(--color-cream), #f0f9ff, var(--color-cream), #fef7ed);
+  background-size: 400% 400%;
+  animation: gradientFlow 15s ease infinite;
+}
+
+.animate-float {
+  animation: floatUp 0.6s ease-out;
+}
+
+.animate-float-icons {
+  animation: floatIcons 6s ease-in-out infinite;
+}
+
+.animate-card-hover:hover {
+  animation: cardHover 0.2s ease-out forwards;
+}
+
+.animate-card-enter {
+  animation: cardEnter 0.5s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-100) 25%,
+    var(--color-gray-50) 50%,
+    var(--color-gray-100) 75%
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
