@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
+from app.models.requests import WhitelistSourceRequest
 from app.models.responses import UploadResponse
 from app.services.vector_store import vector_store_service
+from app.utils.web import web_scraper
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -18,6 +21,38 @@ async def get_library():
     except Exception as e:
         logger.error(f"Error fetching library: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch library")
+
+
+@router.post("/library")
+async def add_web_source(request: WhitelistSourceRequest):
+    """Add a web source to the library"""
+    try:
+        source_id = str(uuid.uuid4())
+        
+        # Create a web source entry (no actual content, just metadata)
+        web_source = {
+            "text": (await web_scraper.extract_text_from_url(request.source_url))["content"],
+            "source_name": request.source_name,
+            "source_url": request.source_url,
+            "source_type": request.source_type,
+            "page": 0,
+            "chunk_index": 0
+        }
+        
+        # Store the web source
+        await vector_store_service.store_web_source(source_id, web_source)
+        
+        return {
+            "source_id": source_id,
+            "source_name": request.source_name,
+            "source_url": request.source_url,
+            "source_type": request.source_type,
+            "message": "Web source added successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error adding web source: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to add web source")
 
 
 @router.delete("/library/{source_id}")

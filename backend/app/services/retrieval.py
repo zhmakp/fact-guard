@@ -36,7 +36,7 @@ class RetrievalService:
             logger.error(f"Error finding relevant sources: {str(e)}")
             return []
     
-    def _create_excerpt(self, text: str, max_length: int = 200) -> str:
+    def _create_excerpt(self, text: str, max_length: int = 500) -> str:
         """Create a brief excerpt from text"""
         if len(text) <= max_length:
             return text

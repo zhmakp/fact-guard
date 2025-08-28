@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Background } from './components/layout/Background';
 import { FAB } from './components/layout/FAB';
+import { Drawer } from './components/ui/Drawer';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
 import { Card } from './components/ui/Card';
@@ -118,7 +119,7 @@ const Toast = styled.div<{ $type: 'success' | 'error' | 'info' }>`
 
 function App() {
   const [input, setInput] = useState('');
-  const [, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { submitCheck, results, error, isLoading } = useFactCheck();
   const { toasts, showToast, dismissToast } = useToast();
 
@@ -227,6 +228,7 @@ function App() {
         </MainContent>
 
         <FAB onClick={() => setDrawerOpen(true)} />
+        <Drawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
         <ToastContainer>
           {toasts.map((toast) => (

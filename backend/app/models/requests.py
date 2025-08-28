@@ -37,3 +37,9 @@ class ConfidenceThreshold(BaseModel):
 class SourceConfig(BaseModel):
     trusted_sources: list[str] = Field(default_factory=list, description="List of trusted source URLs")
     blocked_sources: list[str] = Field(default_factory=list, description="List of blocked source URLs")
+
+
+class WhitelistSourceRequest(BaseModel):
+    source_name: str = Field(..., description="Name of the source")
+    source_url: str = Field(..., description="URL of the source")
+    source_type: Literal["paper", "webpage", "news", "user_upload"] = Field(..., description="Type of source")

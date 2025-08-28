@@ -1,3 +1,5 @@
+from math import log
+import re
 import ollama
 from app.config import settings
 from app.models.requests import FactCheckRequest
@@ -9,7 +11,7 @@ from app.services.retrieval import retrieval_service
 from datetime import datetime
 import logging
 import uuid
-import asyncio
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,8 @@ class FactCheckService:
             
             # Retrieve relevant sources
             relevant_sources = await retrieval_service.find_relevant_sources(claim_text)
-            
+            logger.info(f"Found {len(relevant_sources)} relevant sources")
+
             # Generate fact-check using LLM
             compact_result = await self._generate_compact_fact_check(claim_text, relevant_sources)
             detailed_result = await self._generate_detailed_fact_check(claim_text, relevant_sources)
@@ -81,7 +84,7 @@ class FactCheckService:
             "explanation": "<brief explanation>"
         }}
         """
-        
+        logger.info(f"Generated prompt for compact fact-check: {prompt}")
         try:
             response = await self.client.chat(
                 model=self.model,
@@ -89,14 +92,15 @@ class FactCheckService:
             )
             
             # Parse LLM response (simplified - would need robust JSON parsing)
-            result_text = response['message']['content']
-            
+            result_text = response['message']['content'].replace('```json', '').replace('```', '').strip()
+            logger.info(f"LLM response for compact fact-check: {result_text}")
+            json_result = json.loads(result_text)
             # For demo purposes, return mock result
             return CompactResult(
                 claim=claim,
-                verdict=Verdict.UNCLEAR,
-                confidence=75.0,
-                explanation="Limited information available for definitive assessment",
+                verdict=json_result["verdict"] if "verdict" in json_result else Verdict.UNCLEAR,
+                confidence=json_result["confidence"] if "confidence" in json_result else 50.0,
+                explanation=json_result["explanation"] if "explanation" in json_result else "No explanation provided",
                 top_sources=sources[:3] if sources else []
             )
             
@@ -135,7 +139,7 @@ class FactCheckService:
     def _build_context_from_sources(self, sources: list) -> str:
         """Build context string from source list"""
         context_parts = []
-        for i, source in enumerate(sources[:5], 1):  # Use top 5 sources
+        for i, source in enumerate(sources[:20], 1):  # Use top 5 sources
             if hasattr(source, 'excerpt'):
                 context_parts.append(f"{i}. {source.name}: {source.excerpt}")
         

@@ -80,6 +80,27 @@ class SourceManager:
             categories[source.source_type].append(source)
         return categories
 
+    async def sync_with_vector_store(self):
+        """Sync user trusted sources with vector store library"""
+        try:
+            # Import here to avoid circular dependency
+            from app.services.vector_store import vector_store_service
+            
+            # Get all sources from vector store
+            library_sources = await vector_store_service.get_all_sources()
+            
+            # Update user_trusted_sources with library sources
+            self.user_trusted_sources.clear()
+            for source in library_sources:
+                if source.get("source_url"):
+                    self.user_trusted_sources.add(source["source_url"])
+                    
+        except Exception as e:
+            # Handle gracefully if vector store is not available
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Could not sync with vector store: {str(e)}")
+
 
 # Global source manager instance
 source_manager = SourceManager()

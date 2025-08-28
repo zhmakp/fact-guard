@@ -2,9 +2,12 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition
 from app.config import settings
 from app.services.embeddings import embedding_service
+from app.core.sources import source_manager
 from typing import List, Dict, Any, Optional
 import uuid
 import logging
+
+from app.core.chunking import text_chunker
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +40,9 @@ class VectorStoreService:
             collections = self.client.get_collections()
             collection_names = [col.name for col in collections.collections]
             
-            if self.collection_name not in collection_names:
+            is_new_collection = self.collection_name not in collection_names
+            
+            if is_new_collection:
                 self.client.create_collection(
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(
@@ -46,6 +51,10 @@ class VectorStoreService:
                     )
                 )
                 logger.info(f"Created collection: {self.collection_name}")
+                
+                # Seed default sources for new collection
+                import asyncio
+                asyncio.create_task(self._seed_default_sources())
             
         except Exception as e:
             logger.error(f"Error ensuring collection exists: {str(e)}")
@@ -158,6 +167,43 @@ class VectorStoreService:
             logger.error(f"Error fetching all sources: {str(e)}")
             return []
     
+    async def store_web_source(self, source_id: str, web_source: Dict[str, Any]) -> str:
+        """Store a web source (metadata only, no content chunks)"""
+        try:
+            # Generate embedding for the source name/description
+            text = web_source["text"]
+            chunks = text_chunker.chunk_text(text);
+            embeddings = await embedding_service.embed_texts(chunks)
+            
+            # Create point for web source
+            points = [PointStruct(
+                id=str(uuid.uuid4()),
+                vector=embedding,
+                payload={
+                    "text": chunk,
+                    "source_name": web_source["source_name"],
+                    "source_url": web_source["source_url"],
+                    "source_type": web_source["source_type"],
+                    "page": web_source.get("page", 0),
+                    "chunk_index": web_source.get("chunk_index", 0),
+                    "is_web_source": True
+                }
+            ) for (chunk, embedding) in zip(chunks, embeddings)]
+            
+            # Insert point into collection
+            result = self.client.upsert(
+                collection_name=self.collection_name,
+                points=points,
+            )
+            
+            logger.info(f"Stored web source: {web_source['source_name']}")
+            logger.info(f"Upsert result: {result}")
+            return source_id
+            
+        except Exception as e:
+            logger.error(f"Error storing web source: {str(e)}")
+            raise
+
     async def delete_source(self, source_id: str) -> bool:
         """Delete all chunks from a specific source"""
         try:
@@ -180,6 +226,32 @@ class VectorStoreService:
         except Exception as e:
             logger.error(f"Error deleting source {source_id}: {str(e)}")
             return False
+
+    async def _seed_default_sources(self):
+        """Seed default trusted sources into the vector store"""
+        try:
+            logger.info("Seeding default sources into vector store...")
+            
+            # Get default sources from SourceManager
+            default_sources = source_manager.trusted_sources
+            
+            for source in default_sources:
+                source_id = str(uuid.uuid4())
+                web_source = {
+                    "text": f"Default trusted source: {source.name}",
+                    "source_name": source.name,
+                    "source_url": f"https://{source.base_url}",
+                    "source_type": source.source_type,
+                    "page": 0,
+                    "chunk_index": 0
+                }
+                
+                await self.store_web_source(source_id, web_source)
+            
+            logger.info(f"Seeded {len(default_sources)} default sources")
+            
+        except Exception as e:
+            logger.error(f"Error seeding default sources: {str(e)}")
 
 
 # Global service instance

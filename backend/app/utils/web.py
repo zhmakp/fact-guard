@@ -37,9 +37,8 @@ class WebScraper:
 
             # Try to find main content areas
             content_selectors = [
-                "article",
+                "div",
                 "main",
-                '[role="main"]',
                 ".content",
                 ".article-body",
                 ".entry-content",
