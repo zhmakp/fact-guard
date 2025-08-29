@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, HTTPException
 from typing import List
 from app.models.requests import WhitelistSourceRequest
@@ -28,10 +29,11 @@ async def add_web_source(request: WhitelistSourceRequest):
     """Add a web source to the library"""
     try:
         source_id = str(uuid.uuid4())
+        text = await web_scraper.convert_to_markdown(request.source_url)
         
         # Create a web source entry (no actual content, just metadata)
         web_source = {
-            "text": (await web_scraper.extract_text_from_url(request.source_url))["content"],
+            "text": text,
             "source_name": request.source_name,
             "source_url": request.source_url,
             "source_type": request.source_type,

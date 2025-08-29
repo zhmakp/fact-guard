@@ -28,7 +28,7 @@ const DrawerContainer = styled.div<{ $isOpen: boolean }>`
   right: 0;
   width: 400px;
   height: 100vh;
-  background: var(--color-bg-primary);
+  background: var(--color-cream);
   box-shadow: var(--shadow-xl);
   z-index: 1001;
   transform: translateX(${props => props.$isOpen ? '0' : '100%'});

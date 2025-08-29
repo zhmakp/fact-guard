@@ -1,7 +1,8 @@
+from markdownify import markdownify as md
 import requests
 from bs4 import BeautifulSoup
 from typing import Optional, Dict, Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,17 @@ class WebScraper:
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
+
+    async def convert_to_markdown(self, url: str) -> Optional[str]:
+        """Convert webpage content to Markdown"""
+        try:
+            response = requests.get(url, headers=self.headers, timeout=self.timeout)
+            response.raise_for_status()
+            markdown = md(response.content, strip=['a', 'img', 'script', 'style'])
+            return str(markdown)
+        except Exception as e:
+            logger.error(f"Error converting {url} to Markdown: {str(e)}")
+            return None
 
     async def extract_text_from_url(self, url: str) -> Optional[Dict[str, Any]]:
         """Extract text content from a URL"""
@@ -31,7 +43,6 @@ class WebScraper:
             title = ""
             if soup.title:
                 title = soup.title.string.strip() if soup.title.string else ""
-
             # Extract main content
             content = ""
 
