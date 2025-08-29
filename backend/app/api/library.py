@@ -29,7 +29,7 @@ async def add_web_source(request: WhitelistSourceRequest):
     """Add a web source to the library"""
     try:
         source_id = str(uuid.uuid4())
-        text = await web_scraper.convert_to_markdown(request.source_url)
+        text = await web_scraper.convert_using_docling(request.source_url)
         
         # Create a web source entry (no actual content, just metadata)
         web_source = {
@@ -57,12 +57,12 @@ async def add_web_source(request: WhitelistSourceRequest):
         raise HTTPException(status_code=500, detail="Failed to add web source")
 
 
-@router.delete("/library/{source_id}")
-async def delete_source(source_id: str):
+@router.delete("/library/{source_name}")
+async def delete_source(source_name: str):
     """Delete a source from the library"""
     try:
-        success = await vector_store_service.delete_source(source_id)
-        
+        success = await vector_store_service.delete_source(source_name)
+
         if not success:
             raise HTTPException(status_code=404, detail="Source not found")
         
@@ -71,5 +71,5 @@ async def delete_source(source_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting source {source_id}: {str(e)}")
+        logger.error(f"Error deleting source {source_name}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to delete source")

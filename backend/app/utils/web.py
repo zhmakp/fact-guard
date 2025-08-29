@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from typing import Optional, Dict, Any
 from urllib.parse import urlparse
 import logging
+from docling.document_converter import DocumentConverter
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 class WebScraper:
     def __init__(self, timeout: int = 10):
         self.timeout = timeout
+        self.converter =  DocumentConverter()
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -24,6 +26,15 @@ class WebScraper:
             return str(markdown)
         except Exception as e:
             logger.error(f"Error converting {url} to Markdown: {str(e)}")
+            return None
+
+    async def convert_using_docling(self, url: str) -> Optional[str]:
+        """Convert webpage content to Markdown using Docling"""
+        try:
+            doc = self.converter.convert(source=url)
+            return str(doc.document.export_to_markdown())
+        except Exception as e:
+            logger.error(f"Error converting {url} to Markdown using Docling: {str(e)}")
             return None
 
     async def extract_text_from_url(self, url: str) -> Optional[Dict[str, Any]]:

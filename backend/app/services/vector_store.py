@@ -204,7 +204,7 @@ class VectorStoreService:
             logger.error(f"Error storing web source: {str(e)}")
             raise
 
-    async def delete_source(self, source_id: str) -> bool:
+    async def delete_source(self, source_name: str) -> bool:
         """Delete all chunks from a specific source"""
         try:
             # Delete points by source filter
@@ -214,19 +214,19 @@ class VectorStoreService:
                     must=[
                         FieldCondition(
                             key="source_name",
-                            match={"value": source_id}
+                            match={"value": source_name}
                         )
                     ]
                 )
             )
-            
-            logger.info(f"Deleted source: {source_id}")
+
+            logger.info(f"Deleted source: {source_name}")
             return True
             
         except Exception as e:
-            logger.error(f"Error deleting source {source_id}: {str(e)}")
+            logger.error(f"Error deleting source {source_name}: {str(e)}")
             return False
-
+        
     async def _seed_default_sources(self):
         """Seed default trusted sources into the vector store"""
         try:

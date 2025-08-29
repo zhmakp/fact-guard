@@ -4,6 +4,7 @@ import { X, Plus, Trash2, Globe, FileText, Newspaper, BookOpen } from 'lucide-re
 import { Button } from './Button';
 import { Input } from './Input';
 import { libraryService, type LibrarySource } from '../../services/library';
+import { uploadService } from '../../services/upload';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -190,6 +191,29 @@ const DeleteButton = styled.button`
   }
 `;
 
+const UploadBox = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border: 2px dashed var(--color-text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: var(--color-blue-green);
+    background: var(--color-hover);
+    color: var(--color-blue-green);
+  }
+
+  Input[type="file"] {
+    display: none;
+  }
+`;
+
+
 const getSourceIcon = (type: string) => {
   switch (type) {
     case 'webpage': return <Globe size={16} />;
@@ -202,6 +226,7 @@ const getSourceIcon = (type: string) => {
 export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
   const [sources, setSources] = useState<LibrarySource[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [newSource, setNewSource] = useState({
     name: '',
     url: '',
@@ -228,7 +253,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
 
   const handleAddSource = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newSource.name.trim() || !newSource.url.trim()) {
       return;
     }
@@ -239,7 +264,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
         source_url: newSource.url,
         source_type: newSource.type as 'paper' | 'webpage' | 'news' | 'user_upload'
       });
-      
+
       setNewSource({ name: '', url: '', type: 'webpage' });
       await loadSources();
     } catch (error) {
@@ -256,6 +281,24 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      await uploadService.uploadFile(file, {
+        source_type: 'pdf',
+        source_name: file.name, 
+        is_trusted: true
+      });
+      await loadSources();
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+    }
+    setUploading(false);
+  };
+
   return (
     <>
       <Overlay $isOpen={isOpen} onClick={onClose} />
@@ -266,7 +309,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
             <X size={20} />
           </CloseButton>
         </Header>
-        
+
         <Content>
           <Section>
             <SectionTitle>Add Trusted Source</SectionTitle>
@@ -275,12 +318,23 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
                 placeholder="Source name (e.g., Reuters)"
                 value={newSource.name}
                 onChange={(e) => setNewSource(prev => ({ ...prev, name: e.target.value }))}
+                disabled={uploading}
               />
               <Input
                 placeholder="Source URL (e.g., https://reuters.com)"
                 value={newSource.url}
                 onChange={(e) => setNewSource(prev => ({ ...prev, url: e.target.value }))}
+                disabled={uploading}
               />
+              <UploadBox htmlFor="file-upload">
+                <span>{uploading ? 'Uploading...' : 'Upload File'}</span>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept=".pdf,.txt"
+                  onChange={handleFileUpload}
+                />
+              </UploadBox>
               <FormRow>
                 <SelectWrapper>
                   <Select
