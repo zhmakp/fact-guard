@@ -1,6 +1,5 @@
 # Fact Guard
-
-A lightweight, local-first fact-checking assistant for individuals. Submit claims, URLs, or documents (PDF/CSV) and receive verdicts (True/False/Unclear) with confidence scores and supporting evidence from trusted sources.
+Local-first web app for fact-checking. Instantly submit claims, URLs, or documents (PDF/CSV) and receive verdicts (True/False/Unclear) with confidence scores and supporting evidence from trusted sources—all processed on your machine.
 
 ## Features
 
